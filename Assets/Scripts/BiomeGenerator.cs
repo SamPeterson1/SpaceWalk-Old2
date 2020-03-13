@@ -64,11 +64,7 @@ public class BiomeGenerator
         biomePoints = new BiomePoint[600];
         for(int i = 0; i < 600; i ++)
         {
-            float x = Random.Range(-1f, 1f);
-            float y = Random.Range(-1f, 1f);
-            float z = Random.Range(-1f, 1f);
-
-            Vector3 randPoint = new Vector3(x, y, z).normalized * 1000.0f;
+            Vector3 randPoint = Random.insideUnitSphere * 1000.0f;
 
             if (i % 3 == 0)
             {

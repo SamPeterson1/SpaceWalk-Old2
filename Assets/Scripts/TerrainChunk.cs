@@ -23,23 +23,6 @@ public class TerrainChunk : MonoBehaviour
     private ChunkSaveSection chunkSaveSection;
     private SaveManager saveManager;
 
-    /*
-    public TerrainChunk(Vector3 offset, TerrainShape shape, RunShader generator, BinaryWriter writer, TerrainGenerator terrainGenerator)
-    {
-
-        this.generator = generator;
-        this.shape = shape;
-        this.offset = offset;
-        genDensities();
-
-        saveManager = GameObject.FindGameObjectWithTag("SaveManager").GetComponent<SaveManager>();
-        chunkSaveSection = saveManager.GetSaveSection(ChunkSaveSection.chunkIdentifier) as ChunkSaveSection;
-        chunkSaveSection.deformations = pastData;
-
-        computeMesh();
-    }
-    */
-
     private void Awake()
     {
         saveManager = GameObject.FindGameObjectWithTag("SaveManager").GetComponent<SaveManager>();
@@ -59,36 +42,50 @@ public class TerrainChunk : MonoBehaviour
 
     public void GenTerrain()
     {
-        genDensities();
-        computeMesh();
+        GenDensities();
+        ComputeMesh();
     }
 
-    public void updateFromSaveData(Player player)
+    public void UpdateFromSaveData(Player player)
     {
         Vector3 chunkPos = CalculateChunkPos();
         Vector3 displacement = chunkPos - player.getChunkPosition();
 
         if (Mathf.Abs(displacement.x) >= 2 || Mathf.Abs(displacement.y) >= 2 || Mathf.Abs(displacement.z) >= 2)
         {
-            genDensities();
-            computeMesh();
+            GenDensities();
+            ComputeMesh();
         }
     }
 
-    public static BiomeGenerator.BiomePoint[] loadSaveData(BiomeGenerator biomeGenerator, out TetherNetwork.TetherData[] tetherDatas)
+    int ToIndex(Vector3 coord)
     {
-        ChunkIO.LoadData(out pastData, out BiomeGenerator.BiomePoint[] biomes, biomeGenerator.biomes, out tetherDatas);
-        return biomes;
+        return (int)coord.x * 40 * 40 + (int)coord.y * 40 + (int)coord.z;
     }
 
-    public static void SaveData(BiomeGenerator.BiomePoint[] points)
+    float NearestDensity(Vector3 point)
     {
-        ChunkIO.WriteData(pastData, points);
+        return densities[ToIndex(point)];
     }
 
-    public void genDensities()
+    public bool InTerrain(Vector3 point, float tolerance)
     {
-        shape.getDensities(offset, out densities, out colors);
+        Vector3 chunkCorner = offset - new Vector3(20, 20, 20);
+        Vector3 relativePos = point - chunkCorner;
+        return NearestDensity(relativePos) < tolerance;
+    }
+
+    public Vector3 RandomSurfacePoint()
+    {
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        int numVerts = mesh.vertexCount;
+        int randIndex = Random.Range(0, numVerts);
+        return mesh.vertices[randIndex] + transform.position;
+    }
+
+    public void GenDensities()
+    {
+        shape.GetDensities(offset, out densities, out colors);
         if (pastData.ContainsKey(offset))
         {
             pastData.TryGetValue(offset, out currentDeform);
@@ -107,7 +104,7 @@ public class TerrainChunk : MonoBehaviour
         return new Color(color.x, color.y, color.z);
     }
 
-    public void computeMesh()
+    public void ComputeMesh()
     {
         
         RunShader.Triangle[] triangles = generator.run(densities, this.colors, transform.position);
@@ -123,10 +120,10 @@ public class TerrainChunk : MonoBehaviour
             colors[i * 3 + 1] = color;
             colors[i * 3 + 2] = color;
         }
-        genMesh(verts, colors);
+        GenMesh(verts, colors);
     }
 
-    private void genMesh(Vector3[] vertices, Color[] colors)
+    private void GenMesh(Vector3[] vertices, Color[] colors)
     {
         int[] indices = new int[vertices.Length];
         for(int i = 0; i < indices.Length; i ++)
@@ -145,21 +142,14 @@ public class TerrainChunk : MonoBehaviour
         GetComponent<MeshCollider>().sharedMesh = mesh;
     }
 
-    public float[] getDensities()
-    {
-        return densities;
-    }
-
-    
     public void Reload()
     {
         offset = transform.position;
-        genDensities();
-        computeMesh();
+        GenDensities();
+        ComputeMesh();
         gameObject.SetActive(true);
     }
     
-
     void SaveDeforms()
     {
         if (currentDeform.Modified())
@@ -171,7 +161,7 @@ public class TerrainChunk : MonoBehaviour
         }
     }
 
-    public void deform(Vector3 deformCenter, float radius, int subtract)
+    public void Deform(Vector3 deformCenter, float radius, int subtract)
     {
         int startX = (int)(deformCenter.x - radius);
         int startY = (int)(deformCenter.y - radius);
@@ -208,18 +198,18 @@ public class TerrainChunk : MonoBehaviour
 
         if (updated)
         {
-            computeMesh();
+            ComputeMesh();
         }
         SaveDeforms();
     }
 
     public Vector3 CalculateChunkPos()
     {
-        Vector3 chunkPos = getChunkFromPos(transform.position);
+        Vector3 chunkPos = GetChunkFromPos(transform.position);
         return chunkPos;
     }
 
-    public static Vector3Int getChunkFromPos(Vector3 position)
+    public static Vector3Int GetChunkFromPos(Vector3 position)
     {
         Vector3 rawPos = new Vector3(position.x, position.y, position.z);
         Vector3Int chunkPos = Round(rawPos / 39f);

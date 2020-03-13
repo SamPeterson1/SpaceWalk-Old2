@@ -110,7 +110,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 126
+  m_Constraints: 0
   m_CollisionDetection: 0
 --- !u!114 &7853549471094151514
 MonoBehaviour:
@@ -137,12 +137,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c0062139c158f14b833f1700a144caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  supplier: {fileID: 0}
-  supplies: []
-  connectionPrefab: {fileID: 9037279962015650278, guid: 79b0053762f6e6c44b079f14bd2b7153,
-    type: 3}
-  hasOxygen: 0
-  isRoot: 0
-  firstTether: 0
-  tempSupplier: 0
-  suppliedByTempSupplier: 0
+  tetherNode:
+    supplies: []
+    supplierObject: {fileID: 0}
+    network: {fileID: 0}
+    tetherObject: {fileID: 0}
+    tetherPos: {x: 0, y: 0, z: 0}
+    hasOxygen: 0
+    isSupplier: 0
+    freezeOxygen: 0
+    loaded: 0

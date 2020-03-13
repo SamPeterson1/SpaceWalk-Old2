@@ -43,12 +43,17 @@ public class Player : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.T))
         {
-            tetherNetwork.PlaceTether(transform.position + -2 * camera.transform.forward + new Vector3(0, 2, 0), false);
+            if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit)) {
+                tetherNetwork.PlaceTether(hit.point + hit.point.normalized * 2, false);
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Y))
         {
-            tetherNetwork.PlaceTether(transform.position + -2 * camera.transform.forward, true);
+            if (Physics.Raycast(camera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
+            {
+                tetherNetwork.PlaceTether(hit.point + hit.point.normalized * 2, true);
+            }
         }
 
         if (Input.GetKey(KeyCode.Q))
@@ -105,7 +110,7 @@ public class Player : MonoBehaviour
         Ray ray = camera.ScreenPointToRay(Input.mousePosition);
         if(Physics.Raycast(ray, out hit, 20, layerMask))
         {
-            generator.deform(hit.point, 5, subtract);
+            generator.Deform(hit.point, 5, subtract);
         } 
     }
 
@@ -118,13 +123,13 @@ public class Player : MonoBehaviour
 
     public void readChunkData()
     {
-        chunkPos = TerrainChunk.getChunkFromPos(transform.position);
+        chunkPos = TerrainChunk.GetChunkFromPos(transform.position);
         deltaChunk = pastChunk - chunkPos;
     }
 
     public void readPastChunk()
     {
-        pastChunk = TerrainChunk.getChunkFromPos(transform.position);
+        pastChunk = TerrainChunk.GetChunkFromPos(transform.position);
     }
 
     public Vector3Int getDeltaChunk()

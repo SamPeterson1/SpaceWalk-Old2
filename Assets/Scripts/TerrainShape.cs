@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class TerrainShape
 {
-    Noise noise = new Noise();
-    int foo = 0;
+    readonly Noise noise = new Noise();
 
     public NoiseSettings settings;
     public ComputeShader shader;
@@ -23,7 +22,7 @@ public class TerrainShape
         biomeGenerator.GenerateBiomes();
     }
 
-    public void getDensities(Vector3 offset, out float[] densities, out Vector3[] colors)
+    public void GetDensities(Vector3 offset, out float[] densities, out Vector3[] colors)
     {
         int kernelHandle = shader.FindKernel("CSMain");
 
@@ -39,7 +38,7 @@ public class TerrainShape
         shader.SetFloat("yOff", offset.y);
         shader.SetFloat("zOff", offset.z);
 
-        loadSettingsToGPU();
+        LoadSettingsToGPU();
         shader.Dispatch(kernelHandle, 5, 5, 5);
 
         biomesBuffer.Dispose();
@@ -57,7 +56,7 @@ public class TerrainShape
         }
     }
 
-    private void loadSettingsToGPU()
+    private void LoadSettingsToGPU()
     {
         shader.SetFloat("roughness", settings.roughness);
         shader.SetFloat("persistence", settings.persistence);
@@ -67,7 +66,7 @@ public class TerrainShape
         shader.SetFloat("minRadius", settings.minRadius);
     }
 
-    public float getDensity(float x, float y, float z)
+    public float GetDensity(float x, float y, float z)
     {
         Vector3 toCenter = new Vector3(x, y, z);
 

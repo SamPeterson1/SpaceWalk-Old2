@@ -1,51 +1,62 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TetherConnection : MonoBehaviour
 {
     public Tether tetherA;
     public Tether tetherB;
-    private LineRenderer renderer;
+    public Color colorA;
+    public Color colorB;
+    [Range(0, 10)]
+    public float rate;
     private Material material;
-    public bool enabled;
+    private MeshRenderer meshRenderer;
     void Start()
     {
-        renderer = GetComponent<LineRenderer>();
-        material = renderer.material;
-        renderer.positionCount = 2;
-    }
-
-    private void OnDestroy()
-    {
-        renderer.enabled = false;
+        meshRenderer = GetComponent<MeshRenderer>();
+        material = meshRenderer.material;
     }
 
     // Update is called once per frame
     void Update()
     {
+        
         if (tetherA == null || tetherB == null) {
             Destroy(gameObject);
             return;
         }
-        renderer.SetPosition(0, tetherA.transform.position);
-        renderer.SetPosition(1, tetherB.transform.position);
+
         if (!tetherA.tetherNode.network.InRange(tetherA.tetherNode, tetherB.tetherNode))
         {
-            renderer.enabled = false;
-            enabled = false;
+            meshRenderer.enabled = false;
         } else
         {
-            renderer.enabled = true;
-            enabled = true;
+            meshRenderer.enabled = true;
         }
 
+        float emissionMultiplier;
+        float colorMultiplier;
         if(tetherA.tetherNode.hasOxygen || tetherB.tetherNode.hasOxygen)
         {
-            material.color = Color.cyan;
+            emissionMultiplier = 10.0f;
+            colorMultiplier = 1.0f;
         } else
         {
-            material.color = Color.red;
+            Debug.Log("NO O2");
+            colorMultiplier = 0.3f;
+            emissionMultiplier = 0.0f;
         }
+        
+
+        transform.position = (tetherA.transform.position + tetherB.transform.position) / 2.0f;
+        transform.LookAt(tetherA.transform);
+        transform.Rotate(new Vector3(90, 0, 0));
+        transform.localScale = new Vector3(transform.localScale.x, (tetherA.transform.position - tetherB.transform.position).magnitude / 2.0f, transform.localScale.z);
+        
+        float factor = Mathf.Clamp((Mathf.Sin(Time.time * rate) + 1.0f), 0, 1);
+        Debug.Log(factor);
+        Color finalColor = colorA * factor + colorB * (1 - factor);
+
+        material.SetColor("_Color", finalColor * colorMultiplier);
+        material.SetColor("_EmissionColor", finalColor * emissionMultiplier);
     }
 }

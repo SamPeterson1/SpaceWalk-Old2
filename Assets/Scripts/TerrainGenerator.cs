@@ -12,7 +12,7 @@ public class TerrainGenerator : MonoBehaviour
     public RunShader shader;
     public ColorGenerator colorGen;
     public GameObject chunkPrefab2;
-    private List<TerrainChunk> chunks;
+    private Dictionary<Vector3, TerrainChunk> chunks;
 
     public int dist;
 
@@ -20,7 +20,6 @@ public class TerrainGenerator : MonoBehaviour
     private Player player;
 
     private Queue<TerrainChunk> needUpdate;
-    private BinaryWriter chunkData;
 
     public List<Biome> biomes;
     public NoiseSettings settings;
@@ -36,10 +35,12 @@ public class TerrainGenerator : MonoBehaviour
 
         float foo = Time.time;
         shader = new RunShader(compute);
-        shape = new TerrainShape(biomes);
-        shape.settings = settings;
-        shape.shader = densities;
-        chunks = new List<TerrainChunk>();
+        shape = new TerrainShape(biomes)
+        {
+            settings = settings,
+            shader = densities
+        };
+        chunks = new Dictionary<Vector3, TerrainChunk>();
         needUpdate = new Queue<TerrainChunk>();
 
         
@@ -58,10 +59,10 @@ public class TerrainGenerator : MonoBehaviour
         Debug.Log(Time.realtimeSinceStartup - foo + " TIME");
     }
 
-    public void deform(Vector3 pos, float radius, int subtract)
+    public void Deform(Vector3 pos, float radius, int subtract)
     {
        // int i = 0;
-        foreach (TerrainChunk chunk in chunks)
+        foreach (TerrainChunk chunk in chunks.Values)
         {
             Vector3 chunkCenter = chunk.gameObject.transform.position;
             Vector3 toCenter = chunkCenter - pos;
@@ -69,105 +70,83 @@ public class TerrainGenerator : MonoBehaviour
             if (toCenter.magnitude - radius < 40)
             {
                 //i++;
-                chunk.deform(pos, radius, subtract);
+                chunk.Deform(pos, radius, subtract);
             }
         }
         //Debug.Log(i);
     }
-
-    /*
-    void genChunk(Vector3 offset)
-    {
-        TerrainChunk chunk = new TerrainChunk(offset, shape, shader, chunkData, this);
-        chunks.Add(chunk);
-    }
-    */
 
     void CreateChunk(Vector3 offset)
     {
         TerrainChunk chunk = Instantiate(chunkPrefab2, offset, Quaternion.identity).GetComponent<TerrainChunk>();
         chunk.shape = shape;
         chunk.GenTerrain();
-        chunks.Add(chunk);
+        chunks.Add(chunk.CalculateChunkPos(), chunk);
     }
 
     // Update is called once per frame
     void Update()
     {
-        /*
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            foreach (TerrainChunk chunk in chunks)
-            {
-                chunk.genDensities();
-                chunk.computeMesh();
-            }
-            TerrainChunk.SaveData(shape.biomePoints);
-        }
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            foreach (TerrainChunk chunk in chunks)
-            {
-                chunk.SaveDeforms();
-            }
-            //TerrainChunk.WriteData(saveFile);
-            saveFile.WriteData();
-            
-            /*
-            TerrainChunk.SaveData(shape.biomePoints);
-            //network.Save();
-            
-        } else if(Input.GetKeyDown(KeyCode.L))
-        {
-            saveFile.ReadData();
-            //TerrainChunk.LoadData(saveFile.GetSaveSection(ChunkSaveSection.chunkIdentifier) as ChunkSaveSection);
-            foreach (TerrainChunk chunk in chunks)
-            {
-                chunk.genDensities();
-                chunk.computeMesh();
-            }
-            */
-            /*
-             
-            shape.biomePoints = TerrainChunk.loadSaveData(shape.biomeGenerator, out TetherNetwork.TetherData[] tetherDatas);
-            foreach (TerrainChunk chunk in chunks)
-            {
-                chunk.genDensities();
-                chunk.computeMesh();
-            }
-            //network.Load(tetherDatas);
-            */
-        //}
-
         player.readChunkData();
         player.readPastChunk();
+        List<Vector3> removePlease = new List<Vector3>();
         if (player.changedChunks())
         {
-            foreach (TerrainChunk chunk in chunks)
+            foreach (TerrainChunk chunk in chunks.Values)
             {
                 Vector3 displacement = chunk.CalculateChunkPos() - player.getChunkPosition();
                 if (Mathf.Abs(displacement.x) >= 3)
                 {
+                    removePlease.Add(chunk.CalculateChunkPos());
                     chunk.gameObject.transform.Translate(new Vector3(-5 * 39 * Mathf.Sign(displacement.x), 0, 0));
                     needUpdate.Enqueue(chunk);
                     chunk.gameObject.SetActive(false);
                 } else if (Mathf.Abs(displacement.y) >= 3)
                 {
+                    removePlease.Add(chunk.CalculateChunkPos());
                     chunk.gameObject.transform.Translate(new Vector3(0, -5 * 39 * Mathf.Sign(displacement.y), 0));
                     needUpdate.Enqueue(chunk);
                     chunk.gameObject.SetActive(false);
                 } else if (Mathf.Abs(displacement.z) >= 3)
                 {
+                    removePlease.Add(chunk.CalculateChunkPos());
                     chunk.gameObject.transform.Translate(new Vector3(0, 0, -5 * 39 * Mathf.Sign(displacement.z)));
                     needUpdate.Enqueue(chunk);
                     chunk.gameObject.SetActive(false);
                 }
             }
         }
+
+        foreach(Vector3 remove in removePlease)
+        {
+            chunks.Remove(remove);
+        }
+
         if (needUpdate.Count > 0)
         {
             TerrainChunk chunk = needUpdate.Dequeue();
+            chunks.Add(chunk.CalculateChunkPos(), chunk);
             chunk.Reload();
+        }
+    }
+
+    public Vector3 RandomSurfacePoint(Vector3 chunkPos)
+    {
+        chunks.TryGetValue(chunkPos, out TerrainChunk chunk);
+        return chunk.RandomSurfacePoint();
+    }
+
+    public bool InTerrain(Vector3 point, float tolerance)
+    {
+        Vector3 chunkPos = TerrainChunk.GetChunkFromPos(point);
+        chunks.TryGetValue(chunkPos, out TerrainChunk chunk);
+        if (chunk != null)
+        {
+            return chunk.InTerrain(point, tolerance);
+        } else
+        {
+            Debug.Log("):" + chunkPos + " " + point);
+            return false;
         }
     }
 

@@ -9,7 +9,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{AA0BEAAE-9F45-471E-8C34-C42A01CA8DD0}</ProjectGuid>
+    <ProjectGuid>{3BFE991D-DF8C-701F-4DEE-5D9AAC01DF64}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -67,8 +67,6 @@
     <Compile Include="Assets\Scripts\BiomeGenerator.cs" />
     <Compile Include="Assets\Scripts\BiomeSaveSection.cs" />
     <Compile Include="Assets\Scripts\BiomeType.cs" />
-    <Compile Include="Assets\Scripts\CameraController.cs" />
-    <Compile Include="Assets\Scripts\ChunkIO.cs" />
     <Compile Include="Assets\Scripts\ChunkSaveSection.cs" />
     <Compile Include="Assets\Scripts\ColorGenerator.cs" />
     <Compile Include="Assets\Scripts\GravityBody.cs" />
@@ -80,6 +78,10 @@
     <Compile Include="Assets\Scripts\Planet.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
     <Compile Include="Assets\Scripts\RWFile.cs" />
+    <Compile Include="Assets\Scripts\Resource.cs" />
+    <Compile Include="Assets\Scripts\ResourceManager.cs" />
+    <Compile Include="Assets\Scripts\ResourceSettings.cs" />
+    <Compile Include="Assets\Scripts\ResourceType.cs" />
     <Compile Include="Assets\Scripts\RunShader.cs" />
     <Compile Include="Assets\Scripts\SaveFile.cs" />
     <Compile Include="Assets\Scripts\SaveManager.cs" />
@@ -105,31 +107,31 @@
     <None Include="Assets\Compute\Includes\MarchTables.compute" />
     <None Include="Assets\Compute\Includes\Noise.compute" />
     <Reference Include="Unity.Timeline.Editor">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.VSCode.Editor">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Rider.Editor">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
-      <HintPath>C:/Users/Sam/Downloads/SpaceWalk-master/SpaceWalk-master/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AIModule">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>

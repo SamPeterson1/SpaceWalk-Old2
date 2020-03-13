@@ -11,9 +11,9 @@ public class TetherNetwork : MonoBehaviour
         public bool tempSupplier;
     }
 
-    public Dictionary<Vector3, List<Tether>> tethers = new Dictionary<Vector3, List<Tether>>();
-    public List<TetherNode> loadedNodes;
-    public List<TetherNode> unloadedNodes;
+    public Dictionary<Vector3, List<Tether>> tethers;
+    public List<TetherNode> loadedNodes = new List<TetherNode>();
+    public List<TetherNode> unloadedNodes = new List<TetherNode>();
     public Player player;
     public TerrainGenerator generator;
     public GameObject tetherPrefab;
@@ -49,6 +49,7 @@ public class TetherNetwork : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         generator = GameObject.FindGameObjectWithTag("Generator").GetComponent<TerrainGenerator>();
+        tethers = new Dictionary<Vector3, List<Tether>>();
 
         SaveManager saveManager = GameObject.FindGameObjectWithTag("SaveManager").GetComponent<SaveManager>();
         TetherSaveSection tetherSaveSection = saveManager.GetSaveSection(TetherSaveSection.tetherIdentifier) as TetherSaveSection;
@@ -85,7 +86,7 @@ public class TetherNetwork : MonoBehaviour
         List<TetherNode> unloaded = new List<TetherNode>();
         foreach(TetherNode tetherNode in loadedNodes)
         {
-            Vector3 chunkPos = TerrainChunk.getChunkFromPos(tetherNode.tetherPos);
+            Vector3 chunkPos = TerrainChunk.GetChunkFromPos(tetherNode.tetherPos);
             if (!InRange(chunkPos))
             {
                 unloaded.Add(tetherNode);
@@ -105,7 +106,7 @@ public class TetherNetwork : MonoBehaviour
         List<TetherNode> loaded = new List<TetherNode>();
         foreach(TetherNode tetherNode in unloadedNodes)
         {
-            Vector3 chunkPos = TerrainChunk.getChunkFromPos(tetherNode.tetherPos);
+            Vector3 chunkPos = TerrainChunk.GetChunkFromPos(tetherNode.tetherPos);
             if (InRange(chunkPos))
             {
                 loaded.Add(tetherNode);
@@ -130,7 +131,7 @@ public class TetherNetwork : MonoBehaviour
 
     bool InRange(Vector3 chunkPos)
     {
-        Vector3 displacement = chunkPos - TerrainChunk.getChunkFromPos(player.transform.position);
+        Vector3 displacement = chunkPos - TerrainChunk.GetChunkFromPos(player.transform.position);
         return Mathf.Abs(displacement.x) < loadRange && Mathf.Abs(displacement.y) < loadRange && Mathf.Abs(displacement.z) < loadRange;
     }
 
