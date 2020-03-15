@@ -6,44 +6,37 @@ using UnityEngine;
 
 public class TerrainGenerator : MonoBehaviour
 {
-    TerrainShape shape;
+    public TerrainShape shape;
     public ComputeShader compute;
     public ComputeShader densities;
+    public TextAsset biomesJSON;
     public RunShader shader;
-    public ColorGenerator colorGen;
-    public GameObject chunkPrefab2;
-    private Dictionary<Vector3, TerrainChunk> chunks;
 
-    public int dist;
+    private Dictionary<Vector3, TerrainChunk> chunks;
 
     public GameObject chunkPrefab;
     private Player player;
 
     private Queue<TerrainChunk> needUpdate;
 
-    public List<Biome> biomes;
     public NoiseSettings settings;
     public TetherNetwork network;
-    public SaveFile saveFile;
 
     void Awake()
     {
-        saveFile = new SaveFile("/Save/chunkData.dat");
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
         network = GameObject.FindGameObjectWithTag("Planet").GetComponent<TetherNetwork>();
         TerrainChunk.chunkPrefab = chunkPrefab;
 
         float foo = Time.time;
         shader = new RunShader(compute);
-        shape = new TerrainShape(biomes)
+        shape = new TerrainShape(biomesJSON)
         {
             settings = settings,
             shader = densities
         };
         chunks = new Dictionary<Vector3, TerrainChunk>();
-        needUpdate = new Queue<TerrainChunk>();
-
-        
+        needUpdate = new Queue<TerrainChunk>();   
 
         for (int x = -2; x <= 2; x++)
         {
@@ -61,7 +54,6 @@ public class TerrainGenerator : MonoBehaviour
 
     public void Deform(Vector3 pos, float radius, int subtract)
     {
-       // int i = 0;
         foreach (TerrainChunk chunk in chunks.Values)
         {
             Vector3 chunkCenter = chunk.gameObject.transform.position;
@@ -69,16 +61,14 @@ public class TerrainGenerator : MonoBehaviour
             
             if (toCenter.magnitude - radius < 40)
             {
-                //i++;
                 chunk.Deform(pos, radius, subtract);
             }
         }
-        //Debug.Log(i);
     }
 
     void CreateChunk(Vector3 offset)
     {
-        TerrainChunk chunk = Instantiate(chunkPrefab2, offset, Quaternion.identity).GetComponent<TerrainChunk>();
+        TerrainChunk chunk = Instantiate(chunkPrefab, offset, Quaternion.identity).GetComponent<TerrainChunk>();
         chunk.shape = shape;
         chunk.GenTerrain();
         chunks.Add(chunk.CalculateChunkPos(), chunk);
@@ -136,6 +126,16 @@ public class TerrainGenerator : MonoBehaviour
         return chunk.RandomSurfacePoint();
     }
 
+    public bool ChunkExistsAtChunkPos(Vector3 chunkPos)
+    {
+        return chunks.ContainsKey(chunkPos);
+    }
+
+    public bool ChunkExists(Vector3 pos)
+    {
+        return chunks.ContainsKey(TerrainChunk.GetChunkFromPos(pos));
+    }
+
     public bool InTerrain(Vector3 point, float tolerance)
     {
         Vector3 chunkPos = TerrainChunk.GetChunkFromPos(point);
@@ -143,9 +143,9 @@ public class TerrainGenerator : MonoBehaviour
         if (chunk != null)
         {
             return chunk.InTerrain(point, tolerance);
-        } else
+        }
+        else
         {
-            Debug.Log("):" + chunkPos + " " + point);
             return false;
         }
     }

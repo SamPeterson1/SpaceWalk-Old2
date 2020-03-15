@@ -9,6 +9,7 @@ public class Tether : MonoBehaviour
     Rigidbody body;
     private TetherConnection tetherConnection;
     public TetherNode tetherNode;
+    private bool knockedByPlayer;
 
     void Awake()
     {
@@ -23,7 +24,7 @@ public class Tether : MonoBehaviour
 
     void Update()
     {
-        if (body.constraints == RigidbodyConstraints.None && Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, Mathf.Infinity))
+        if (!knockedByPlayer && body.constraints == RigidbodyConstraints.None && Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, Mathf.Infinity))
         {
             Vector3 localUp = transform.up;
             Vector3 target = hit.normal;
@@ -56,6 +57,7 @@ public class Tether : MonoBehaviour
             body.constraints = RigidbodyConstraints.FreezeAll; 
         } else
         {
+            knockedByPlayer = true;
             body.constraints = RigidbodyConstraints.None;
         }
     }

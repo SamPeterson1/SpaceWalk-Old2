@@ -16,9 +16,9 @@ public class TerrainShape
         public Vector3 color;
     }
 
-    public TerrainShape(List<Biome> biomes)
+    public TerrainShape(TextAsset biomesJSON)
     {
-        biomeGenerator = new BiomeGenerator(biomes);
+        biomeGenerator = new BiomeGenerator(biomesJSON);
         biomeGenerator.GenerateBiomes();
     }
 

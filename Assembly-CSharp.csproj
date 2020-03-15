@@ -78,10 +78,11 @@
     <Compile Include="Assets\Scripts\Planet.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
     <Compile Include="Assets\Scripts\RWFile.cs" />
-    <Compile Include="Assets\Scripts\Resource.cs" />
+    <Compile Include="Assets\Scripts\ResourceData.cs" />
     <Compile Include="Assets\Scripts\ResourceManager.cs" />
     <Compile Include="Assets\Scripts\ResourceSettings.cs" />
     <Compile Include="Assets\Scripts\ResourceType.cs" />
+    <Compile Include="Assets\Scripts\ResourceUnit.cs" />
     <Compile Include="Assets\Scripts\RunShader.cs" />
     <Compile Include="Assets\Scripts\SaveFile.cs" />
     <Compile Include="Assets\Scripts\SaveManager.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="Assets\Scripts\Tables.cs" />
     <Compile Include="Assets\Scripts\TerrainChunk.cs" />
     <Compile Include="Assets\Scripts\TerrainDeformation.cs" />
-    <Compile Include="Assets\Scripts\TerrainEditor.cs" />
     <Compile Include="Assets\Scripts\TerrainGenerator.cs" />
     <Compile Include="Assets\Scripts\TerrainShape.cs" />
     <Compile Include="Assets\Scripts\Tether.cs" />
@@ -98,7 +98,9 @@
     <Compile Include="Assets\Scripts\TetherNode.cs" />
     <Compile Include="Assets\Scripts\TetherSaveSection.cs" />
     <Compile Include="Assets\Scripts\Wireframe.cs" />
+    <None Include="Assets\Settings\Resources.txt" />
     <None Include="Assets\Shaders\ConnectionShader.shader" />
+    <None Include="Assets\Settings\Biomes.txt" />
     <None Include="Assets\Compute\March.compute" />
     <None Include="Assets\Compute\Grid.compute" />
     <None Include="Assets\Compute\Includes\BiomeSettings.compute" />

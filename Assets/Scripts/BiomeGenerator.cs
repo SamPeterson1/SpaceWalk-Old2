@@ -5,6 +5,7 @@ using UnityEngine;
 public class BiomeGenerator
 {
     public Dictionary<BiomeType, Biome> biomes;
+    public TextAsset biomesJSON;
     public BiomePoint[] biomePoints;
     public struct BiomePoint
     {
@@ -19,16 +20,36 @@ public class BiomeGenerator
         public Vector3 pos;
     }
 
-    public BiomeGenerator(List<Biome> biomes)
+    public BiomeGenerator(TextAsset biomesJSON)
     {
+        this.biomesJSON = biomesJSON;
+        LoadBiomes();
         SaveManager saveManager = GameObject.FindGameObjectWithTag("SaveManager").GetComponent<SaveManager>();
         BiomeSaveSection biomeSaveSection = saveManager.GetSaveSection(BiomeSaveSection.biomeIdentifier) as BiomeSaveSection;
         biomeSaveSection.biomeGenerator = this;
-        this.biomes = new Dictionary<BiomeType, Biome>();
-        foreach(Biome biome in biomes)
+        biomes = new Dictionary<BiomeType, Biome>();
+        
+        foreach(Biome biome in LoadBiomes())
         {
-            this.biomes.Add(biome.type, biome);
+            biomes.Add(biome.type, biome);
         }
+    }
+
+    List<Biome> LoadBiomes()
+    {
+        string text = biomesJSON.text;
+        Debug.Log(text);
+        text = text.Replace("\n", "");
+        Debug.Log(text);
+        string[] array = text.Split(new string[] { "BIOME" }, System.StringSplitOptions.RemoveEmptyEntries);
+        List<Biome> biomes = new List<Biome>();
+        foreach(string str in array)
+        {
+            string toBiome = str.Replace(" ", "");
+            biomes.Add(JsonUtility.FromJson<Biome>(toBiome));
+        }
+
+        return biomes;
     }
 
     public void GenerateBiomes(Vector4[] biomes)
@@ -57,6 +78,23 @@ public class BiomeGenerator
         biomePoint.roughness = settings.roughness;
 
         return biomePoint;
+    }
+
+    public Biome GetBiomeAt(Vector3 pos)
+    {
+        float minDist = -1;
+        Biome closestBiome = null;
+        foreach (BiomePoint biomePoint in biomePoints)
+        {
+            float dist = (biomePoint.pos - pos).magnitude;
+            if (minDist == -1 || dist < minDist)
+            {
+                minDist = dist;
+                biomes.TryGetValue((BiomeType)biomePoint.biome, out closestBiome);
+            }
+        }
+
+        return closestBiome;
     }
 
     public void GenerateBiomes()

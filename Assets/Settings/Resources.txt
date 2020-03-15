@@ -1,0 +1,14 @@
+RESOURCE
+{
+	"radius":40.0,
+	"count":50,
+	"resourcePrefab":"Compound",
+	"type":0
+}
+RESOURCE
+{
+	"radius":10.0,
+	"count":50,
+	"resourcePrefab":"Sphere",
+	"type":1
+}

@@ -4,5 +4,5 @@ using UnityEngine;
 
 public enum ResourceType
 {
-    COMPOUND
+    COMPOUND, FOO
 }

@@ -79,8 +79,14 @@ public class TerrainChunk : MonoBehaviour
     {
         Mesh mesh = GetComponent<MeshFilter>().mesh;
         int numVerts = mesh.vertexCount;
-        int randIndex = Random.Range(0, numVerts);
-        return mesh.vertices[randIndex] + transform.position;
+        if (numVerts > 0)
+        {
+            int randIndex = Random.Range(0, numVerts);
+            return mesh.vertices[randIndex] + transform.position;
+        } else
+        {
+            return offset;
+        }
     }
 
     public void GenDensities()
