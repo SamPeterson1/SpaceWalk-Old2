@@ -8,14 +8,16 @@ public class ResourceManager : MonoBehaviour
     public TerrainGenerator terrainGenerator;
     public BiomeGenerator biomeGenerator;
     public Player player;
-    public int numResources;
+    public int avgChunksPerResource;
     private Dictionary<Vector3, List<ResourceData>> unloadedResources;
     private Dictionary<Vector3, List<ResourceUnit>> loadedResources;
     private List<Vector3> generatedChunks = new List<Vector3>();
+    private bool needsUpdate = false;
 
-    private struct ResourceData
+    public struct ResourceData
     {
         public Vector3 pos;
+        public Quaternion rotation;
         public ResourceType type;
     }
 
@@ -33,13 +35,15 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void LateUpdate()
     {
-
-        if (player.changedChunks())
+        if(player.changedChunks())
         {
-            LoadResources();
-            UnloadResources();
+            needsUpdate = true;
+        }
+        if (needsUpdate && player.getDeltaChunk() == Vector3.zero && terrainGenerator.DoneLoading())
+        {
+            needsUpdate = false;
             Vector3 off = TerrainChunk.GetChunkFromPos(player.transform.position);
             for (int x = -2 + (int)off.x; x <= 2 + off.x; x++)
             {
@@ -48,18 +52,42 @@ public class ResourceManager : MonoBehaviour
                     for (int z = -2 + (int)off.z; z <= 2 + off.z; z++)
                     {
                         Vector3 pos = new Vector3(x, y, z);
-                        if (!loadedResources.ContainsKey(pos) && !unloadedResources.ContainsKey(pos))
+                        if (!generatedChunks.Contains(pos))
                         {
-                            for (int i = 0; i < 3; i++)
+                            if (terrainGenerator.HasTerrain(pos))
                             {
                                 SpawnResourceInChunk(pos);
+                                generatedChunks.Add(pos);
                             }
                         }
                     }
                 }
             }
+            LoadResources();
+            UnloadResources();
+        }     
+    }
+
+    ResourceType RandomType(List<float> weights, List<ResourceType> types, float spawnRate)
+    {
+        float[] maxVals = new float[weights.Count];
+        float randRange = 10.0f;
+        float lastMax = 0;
+        for(int i = 0; i < weights.Count; i ++)
+        {
+            float probability = weights[i] * spawnRate;
+            maxVals[i] = randRange * probability + lastMax;
+            lastMax += maxVals[i];
+            Debug.Log(maxVals[i] + " " + weights[i] + " " + spawnRate);
         }
 
+        float randFloat = Random.Range(0.0f, randRange);
+        for (int i = 0; i < maxVals.Length; i++)
+        {
+            if (randFloat < maxVals[i] && (i == 0 || randFloat > maxVals[i-1])) return types[i];
+        }
+
+        return ResourceType.NONE;
     }
 
     void LoadResources()
@@ -71,17 +99,38 @@ public class ResourceManager : MonoBehaviour
             {
                 unloadedResources.TryGetValue(chunkPos, out List<ResourceData> data);
                 List<ResourceUnit> resourceUnits = new List<ResourceUnit>();
+                List<ResourceData> invalid = new List<ResourceData>();
                 foreach (ResourceData resourceData in data)
                 {
-                    resources.TryGetValue(resourceData.type, out ResourceSettings settings);
-                    GameObject resourcePrefab = (GameObject)Resources.Load("Prefabs/" + settings.resourcePrefab);
-                    ResourceUnit unit = Instantiate(resourcePrefab, resourceData.pos, Quaternion.identity).GetComponent<ResourceUnit>();
-                    unit.type = settings.type;
-                    resourceUnits.Add(unit);
+                    if (terrainGenerator.InTerrain(resourceData.pos, 0f)) {
+                        resources.TryGetValue(resourceData.type, out ResourceSettings settings);
+                        GameObject resourcePrefab = (GameObject)Resources.Load("Prefabs/" + settings.resourcePrefab);
+                        ResourceUnit unit = Instantiate(resourcePrefab, resourceData.pos, resourceData.rotation).GetComponent<ResourceUnit>();
+                        unit.type = settings.type;
+                        resourceUnits.Add(unit);
+                    } else
+                    {
+                        invalid.Add(resourceData);
+                    }
+                }
+
+                foreach(ResourceData resourceData in invalid)
+                {
+                    data.Remove(resourceData);
                 }
 
                 loaded.Add(chunkPos);
-                loadedResources.Add(chunkPos, resourceUnits);
+                if (!loadedResources.ContainsKey(chunkPos))
+                {
+                    loadedResources.Add(chunkPos, resourceUnits);
+                } else
+                {
+                    loadedResources.TryGetValue(chunkPos, out List<ResourceUnit> units);
+                    foreach(ResourceUnit unit in resourceUnits)
+                    {
+                        units.Add(unit);
+                    }
+                }
             }
         }
 
@@ -104,16 +153,23 @@ public class ResourceManager : MonoBehaviour
                 {
                     if (unit != null)
                     {
-                        ResourceData data;
-                        data.pos = unit.transform.position;
-                        data.type = unit.type;
-                        resourceData.Add(data);
+                        resourceData.Add(GetDataFromUnit(unit));
                         Destroy(unit.gameObject);
                     }
                 }
-
                 removed.Add(chunkPos);
-                unloadedResources.Add(chunkPos, resourceData);
+                if (!unloadedResources.ContainsKey(chunkPos))
+                {
+                    unloadedResources.Add(chunkPos, resourceData);
+                }
+                else
+                {
+                    unloadedResources.TryGetValue(chunkPos, out List<ResourceData> dataList);
+                    foreach (ResourceData data in resourceData)
+                    {
+                        dataList.Add(data);
+                    }
+                }
             }
         }
 
@@ -126,7 +182,7 @@ public class ResourceManager : MonoBehaviour
     bool InRange(Vector3 chunkPos)
     {
         Vector3 displacement = chunkPos - TerrainChunk.GetChunkFromPos(player.transform.position);
-        return Mathf.Abs(displacement.x) < 3 && Mathf.Abs(displacement.y) < 3 && Mathf.Abs(displacement.z) < 3;
+        return !(Mathf.Abs(displacement.x) >= 3 || Mathf.Abs(displacement.y) >= 3 || Mathf.Abs(displacement.z) >= 3);
     }
 
     List<ResourceSettings> LoadResourcesFromFile()
@@ -155,9 +211,12 @@ public class ResourceManager : MonoBehaviour
     void SpawnResource(Vector3 pos)
     {
         Biome biome = biomeGenerator.GetBiomeAt(pos);
-        List<ResourceType> resources = biome.resources;
-        ResourceType toSpawn = resources[Random.Range(0, resources.Count)];
-        InitResource(pos, toSpawn);
+        Debug.Log(biome.type);
+        ResourceType resourceType = RandomType(biome.individualSpawnRates, biome.resources, biome.resourceSpawnRate);
+        if (resourceType != ResourceType.NONE)
+        {
+            InitResource(pos, resourceType);
+        }
     }
 
     void InitResource(Vector3 pos, ResourceType type)
@@ -167,43 +226,99 @@ public class ResourceManager : MonoBehaviour
         {
             Vector3 randPoint = Random.insideUnitSphere;
             randPoint *= settings.radius;
-            /*
-            if (terrainGenerator.InTerrain(randPoint + pos, 0f))
+            ResourceData data;
+            data.pos = randPoint + pos;
+            data.type = settings.type;
+            data.rotation = Random.rotation;
+            Vector3 chunkPos = TerrainChunk.GetChunkFromPos(data.pos);
+            if (unloadedResources.ContainsKey(chunkPos))
             {
-                GameObject resourcePrefab = (GameObject)Resources.Load("Prefabs/" + settings.resourcePrefab);
-                ResourceUnit unit = Instantiate(resourcePrefab, randPoint + pos, Quaternion.identity).GetComponent<ResourceUnit>();
-                unit.type = settings.type;
-                Vector3 chunkPos = TerrainChunk.GetChunkFromPos(unit.transform.position);
-                if (loadedResources.ContainsKey(chunkPos))
-                {
-                    loadedResources.TryGetValue(chunkPos, out List<ResourceUnit> units);
-                    units.Add(unit);
-                }
-                else
-                {
-                    List<ResourceUnit> units = new List<ResourceUnit>() { unit };
-                    loadedResources.Add(chunkPos, units);
-                }
+                unloadedResources.TryGetValue(chunkPos, out List<ResourceData> dataList);
+                dataList.Add(data);
             }
             else
             {
-            */
-                ResourceData data;
-                data.pos = randPoint + pos;
-                data.type = settings.type;
-                Vector3 chunkPos = TerrainChunk.GetChunkFromPos(data.pos);
-                if (unloadedResources.ContainsKey(chunkPos))
-                {
-                    unloadedResources.TryGetValue(chunkPos, out List<ResourceData> dataList);
-                    dataList.Add(data);
-                }
-                else
-                {
-                    List<ResourceData> dataList = new List<ResourceData>() { data };
-                    unloadedResources.Add(chunkPos, dataList);
-                }
-            //}
+                List<ResourceData> dataList = new List<ResourceData>() { data };
+                unloadedResources.Add(chunkPos, dataList);
+            }
         }
+    }
+
+    ResourceData GetDataFromUnit(ResourceUnit unit)
+    {
+        ResourceData retVal;
+        retVal.pos = unit.transform.position;
+        retVal.rotation = unit.transform.rotation;
+        retVal.type = unit.type;
+        return retVal;
+    }
+
+    public void SetData(List<ResourceData> data)
+    {
+        Debug.Log("FOO)!>");
+        needsUpdate = true;
+
+        foreach (List<ResourceUnit> units in loadedResources.Values)
+        {
+            foreach (ResourceUnit unit in units)
+            {
+                if (unit != null)
+                {
+                    Destroy(unit.gameObject);
+                }
+            }
+        }
+
+        loadedResources = new Dictionary<Vector3, List<ResourceUnit>>();
+        unloadedResources = new Dictionary<Vector3, List<ResourceData>>();
+
+        foreach (ResourceData resourceData in data)
+        {
+            Vector3 chunkPos = TerrainChunk.GetChunkFromPos(resourceData.pos);
+            if (unloadedResources.ContainsKey(chunkPos))
+            {
+                unloadedResources.TryGetValue(chunkPos, out List<ResourceData> append);
+                append.Add(resourceData);
+            }
+            else
+            {
+                unloadedResources.Add(chunkPos, new List<ResourceData>() { resourceData });
+            }
+        }
+
+        foreach (ResourceData resourceData in data)
+        {
+            Vector3 chunkPos = TerrainChunk.GetChunkFromPos(resourceData.pos);
+            if(unloadedResources.ContainsKey(chunkPos))
+            {
+                unloadedResources.TryGetValue(chunkPos, out List<ResourceData> append);
+                append.Add(resourceData);
+            } else
+            {
+                unloadedResources.Add(chunkPos, new List<ResourceData>() { resourceData });
+            }
+        }
+    }
+
+    public List<ResourceData> GetAllResourceData()
+    {
+        List<ResourceData> resourceData = new List<ResourceData>();
+        foreach(List<ResourceData> data in unloadedResources.Values)
+        {
+            resourceData.AddRange(data);
+        }
+        foreach(List<ResourceUnit> resourceUnits in loadedResources.Values)
+        {
+            foreach(ResourceUnit unit in resourceUnits)
+            {
+                if (unit != null)
+                {
+                    resourceData.Add(GetDataFromUnit(unit));
+                }
+            }
+        }
+
+        return resourceData;
     }
 
 }

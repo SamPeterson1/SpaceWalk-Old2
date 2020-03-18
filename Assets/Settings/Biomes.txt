@@ -10,7 +10,9 @@ BIOME
 		"minRadius":6.300000190734863,
 		"center":{"x":0.0,"y":0.0,"z":0.0}
 	},
-	"resources":[1]
+	"resources":[2],
+	"individualSpawnRates":[1],
+	"resourceSpawnRate":0.1
 }
 BIOME
 {
@@ -24,7 +26,9 @@ BIOME
 		"minRadius":3.0,
 		"center":{"x":0.0,"y":0.0,"z":0.0}
 	},
-	"resources":[0]
+	"resources":[3],
+	"individualSpawnRates":[1],
+	"resourceSpawnRate":0.5
 }
 BIOME
 {
@@ -38,5 +42,7 @@ BIOME
 		"minRadius":4.199999809265137,
 		"center":{"x":0.0,"y":0.0,"z":0.0}
 	},
-	"resources":[0,1]
+	"resources":[1,2],
+	"individualSpawnRates":[0.2, 0.8],
+	"resourceSpawnRate":0.9
 }

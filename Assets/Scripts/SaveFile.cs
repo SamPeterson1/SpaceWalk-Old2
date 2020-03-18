@@ -20,6 +20,7 @@ public class SaveFile
         AddSection(new ChunkSaveSection());
         AddSection(new BiomeSaveSection());
         AddSection(new TetherSaveSection());
+        AddSection(new ResourceSaveSection());
     }
     
     public void Erase()

@@ -120,6 +120,18 @@ public class TerrainGenerator : MonoBehaviour
         }
     }
 
+    public bool HasTerrain(Vector3 chunkPos)
+    {
+        chunks.TryGetValue(chunkPos, out TerrainChunk chunk);
+        if (chunk != null)
+        {
+            return chunk.HasTerrain();
+        } else
+        {
+            return false;
+        }
+    }
+
     public Vector3 RandomSurfacePoint(Vector3 chunkPos)
     {
         chunks.TryGetValue(chunkPos, out TerrainChunk chunk);

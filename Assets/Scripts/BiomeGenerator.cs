@@ -115,23 +115,6 @@ public class BiomeGenerator
             {
                 biomePoints[i] = GetBiomePoint(randPoint, BiomeType.ROCKY_HILLS);
             }
-
-            /*
-            if (biome == null) Debug.LogError("Biome not found!");
-            biomePoint.biome = (int) biome.type;
-            NoiseSettings settings = biome.settings;
-            biomePoint.amplitude = settings.amplitude;
-            biomePoint.baseRoughness = settings.baseRoughness;
-            biomePoint.center = settings.center;
-            biomePoint.minRadius = settings.minRadius;
-            biomePoint.numLayers = settings.numLayers;
-            biomePoint.persistence = settings.persistence;
-            biomePoint.roughness = settings.roughness;
-
-            
-            biomePoint.pos = randPoint * 1000.0f;
-            biomes[i] = biomePoint;
-            */
         }
     }
 

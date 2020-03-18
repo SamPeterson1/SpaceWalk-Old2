@@ -68,6 +68,13 @@ public class TerrainChunk : MonoBehaviour
         return densities[ToIndex(point)];
     }
 
+    public bool HasTerrain()
+    {
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        int numVerts = mesh.vertexCount;
+        return numVerts > 0;
+    }
+
     public bool InTerrain(Vector3 point, float tolerance)
     {
         Vector3 chunkCorner = offset - new Vector3(20, 20, 20);

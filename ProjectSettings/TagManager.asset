@@ -9,6 +9,7 @@ TagManager:
   - Generator
   - Chunk
   - SaveManager
+  - ResourceManager
   layers:
   - Default
   - TransparentFX

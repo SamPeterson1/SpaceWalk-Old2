@@ -80,6 +80,7 @@
     <Compile Include="Assets\Scripts\RWFile.cs" />
     <Compile Include="Assets\Scripts\ResourceData.cs" />
     <Compile Include="Assets\Scripts\ResourceManager.cs" />
+    <Compile Include="Assets\Scripts\ResourceSaveSection.cs" />
     <Compile Include="Assets\Scripts\ResourceSettings.cs" />
     <Compile Include="Assets\Scripts\ResourceType.cs" />
     <Compile Include="Assets\Scripts\ResourceUnit.cs" />
@@ -128,6 +129,9 @@
     </Reference>
     <Reference Include="Unity.Rider.Editor">
       <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+      <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.2D.Sprite.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>C:/Users/Sam/SpaceWalk/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
